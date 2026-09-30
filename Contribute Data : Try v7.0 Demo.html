@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Focus Flow AI v7.0 Enterprise Data-Flywheel Edition</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- MediaPipe Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              500: '#22c55e',
+              600: '#16a34a',
+              900: '#14532d',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .mirror { transform: scaleX(-1); }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.1); opacity: 0.4; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    .pulse-animation { animation: pulse-ring 2s infinite ease-in-out; }
+  </style>
+    <script>
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-emerald-500 selection:text-slate-950 flex flex-col justify-between">
+
+  <!-- Header Navigation -->
+  <header class="border-b border-slate-800/80 bg-slate-900/90 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center flex-wrap gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-600 p-2.5 rounded-xl text-white shadow-lg shadow-emerald-500/20 flex items-center justify-center">
+          <i class="fa-solid fa-atom text-xl animate-spin" style="animation-duration: 12s;"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-300">
+            Focus Flow AI <span class="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">v7.0 Data-Flywheel</span>
+          </h1>
+          <p class="text-xs text-slate-400" id="i18n-sub">Enterprise Active Motion & Continuous Model Improvement Companion</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-3">
+        <!-- Sensitivity Selector -->
+        <div class="flex items-center bg-slate-950 border border-slate-800 rounded-xl p-1 text-xs shadow-inner">
+          <span class="text-slate-400 px-2 font-medium"><i class="fa-solid fa-sliders text-teal-400 mr-1"></i> Strictness:</span>
+          <button onclick="setSensitivity('relaxed')" id="sensBtnRelaxed" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-slate-200 transition">Relaxed</button>
+          <button onclick="setSensitivity('balanced')" id="sensBtnBalanced" class="px-2.5 py-1 rounded-lg bg-teal-500/20 text-teal-300 font-bold border border-teal-500/30 transition">Balanced</button>
+          <button onclick="setSensitivity('strict')" id="sensBtnStrict" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-slate-200 transition">Strict</button>
+        </div>
+
+        <!-- Flywheel Data Sync Indicator -->
+        <div class="flex items-center gap-2 bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-xl text-xs">
+          <div id="flywheelDot" class="w-2.5 h-2.5 rounded-full bg-slate-600"></div>
+          <span class="text-slate-400 font-medium hidden sm:inline">Flywheel:</span>
+          <span id="flywheelStatusText" class="text-slate-400 font-bold font-mono">Opted Out</span>
+        </div>
+
+        <!-- Camera Start Toggle -->
+        <button id="cameraToggleBtn" onclick="toggleCamera()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold rounded-xl shadow-lg shadow-emerald-600/20 transition flex items-center gap-2">
+          <i class="fa-solid fa-video"></i> <span id="camBtnText">Start Camera</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Application Body -->
+  <main class="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6 w-full flex-grow">
+
+    <!-- Left Column: Vision Stream & Context Modality -->
+    <div class="lg:col-span-6 space-y-6">
+      
+      <!-- Activity Context Mode Selector -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl">
+        <div class="flex justify-between items-center mb-3">
+          <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-layer-group text-emerald-400"></i> Active Study Context
+          </label>
+          <span class="text-[11px] text-teal-400 font-mono" id="studyModeStatusText">PC / Monitor Active</span>
+        </div>
+        
+        <div class="grid grid-cols-3 gap-2">
+          <button onclick="changeStudyMode('pc')" id="modeBtnPc" class="p-3 rounded-xl border border-teal-500 bg-teal-600/20 text-teal-300 flex flex-col items-center justify-center gap-1.5 transition shadow-sm">
+            <i class="fa-solid fa-desktop text-lg"></i>
+            <span class="text-xs font-bold">PC / Screen</span>
+          </button>
+          <button onclick="changeStudyMode('reading')" id="modeBtnReading" class="p-3 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 hover:border-slate-700 flex flex-col items-center justify-center gap-1.5 transition">
+            <i class="fa-solid fa-book-open text-lg"></i>
+            <span class="text-xs font-bold">Reading</span>
+          </button>
+          <button onclick="changeStudyMode('notebook')" id="modeBtnNotebook" class="p-3 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 hover:border-slate-700 flex flex-col items-center justify-center gap-1.5 transition">
+            <i class="fa-solid fa-pen-nib text-lg"></i>
+            <span class="text-xs font-bold">Notebook Pen</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Camera Feed & Visual Tracking Area -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 relative overflow-hidden shadow-xl">
+        <div class="flex justify-between items-center mb-2 px-1">
+          <span class="text-xs text-slate-400 font-medium flex items-center gap-1.5">
+            <i class="fa-solid fa-eye text-cyan-400"></i> AI Vision Stream
+          </span>
+          <div class="flex items-center gap-3">
+            <label class="inline-flex items-center cursor-pointer text-xs text-slate-400 gap-1.5">
+              <input type="checkbox" id="toggleMeshCheckbox" checked class="sr-only peer">
+              <div class="w-7 h-4 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-teal-500 relative"></div>
+              <span>Landmarks Overlay</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="relative aspect-video bg-slate-950 rounded-xl overflow-hidden border border-slate-800/80 flex items-center justify-center">
+          <video id="videoElement" class="absolute inset-0 w-full h-full object-cover mirror hidden" playsinline muted></video>
+          <canvas id="outputCanvas" class="absolute inset-0 w-full h-full object-cover mirror"></canvas>
+
+          <!-- Placeholder when Camera Off -->
+          <div id="camPlaceholder" class="text-center p-6 space-y-3">
+            <div class="w-16 h-16 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center mx-auto text-emerald-400 shadow-inner pulse-animation">
+              <i class="fa-solid fa-video text-2xl"></i>
+            </div>
+            <p class="text-xs text-slate-400 max-w-xs mx-auto">Click 'Start Camera' to initialize live multi-modal detection and pen velocity calculations.</p>
+          </div>
+
+          <!-- Alert Nudge Banner -->
+          <div id="aiGuideBanner" class="absolute inset-x-3 top-3 p-3 rounded-xl bg-slate-900/95 border border-amber-500/40 backdrop-blur text-slate-200 text-xs shadow-2xl flex items-start gap-2.5 hidden transition-all duration-300 z-10">
+            <div class="p-1.5 bg-amber-500/20 text-amber-400 rounded-lg shrink-0">
+              <i class="fa-solid fa-triangle-exclamation text-sm"></i>
+            </div>
+            <div class="flex-1">
+              <div id="guideTitle" class="font-bold text-amber-300">Focus Insight</div>
+              <div id="guideDetail" class="mt-0.5 text-slate-300">Detecting potential distraction...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Telemetry Data Bar -->
+        <div class="mt-3 grid grid-cols-4 gap-2 text-[11px] text-slate-400 border-t border-slate-800/80 pt-3">
+          <div class="bg-slate-950 p-2 rounded-lg border border-slate-800/80">
+            <div class="text-slate-500">Gaze Offset</div>
+            <div id="gazeOffsetVal" class="font-mono text-slate-200 font-bold mt-0.5">0.00</div>
+          </div>
+          <div class="bg-slate-950 p-2 rounded-lg border border-slate-800/80">
+            <div class="text-slate-500">Head Tilt</div>
+            <div id="headPitchVal" class="font-mono text-slate-200 font-bold mt-0.5">0.0°</div>
+          </div>
+          <div class="bg-slate-950 p-2 rounded-lg border border-slate-800/80">
+            <div class="text-slate-500">Pen Motion</div>
+            <div id="penMotionVal" class="font-mono text-emerald-400 font-bold mt-0.5">0.0 px/s</div>
+          </div>
+          <div class="bg-slate-950 p-2 rounded-lg border border-slate-800/80">
+            <div class="text-slate-500">Writing State</div>
+            <div id="writingStateVal" class="font-mono text-teal-400 font-bold mt-0.5">Standby</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Flywheel & Feedback Card -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+        <div class="flex items-center justify-between border-b border-slate-800/80 pb-3 mb-4">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-arrows-spin text-cyan-400 text-lg"></i>
+            <div>
+              <h3 class="text-sm font-bold text-slate-200">Data-Flywheel Edge Training</h3>
+              <p class="text-[11px] text-slate-400">Anonymous landmark telemetry sync to improve AI accuracy</p>
+            </div>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="flywheelOptIn" onchange="toggleFlywheelOptIn()" class="sr-only peer">
+            <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500"></div>
+          </label>
+        </div>
+
+        <div class="flex items-center justify-between text-xs text-slate-400 gap-3">
+          <p class="leading-relaxed text-[11px]">
+            Was the AI focus assessment incorrect? Send an edge-case report to help fine-tune pen-motion and gaze models.
+          </p>
+          <button onclick="sendEdgeCaseFeedback()" id="feedbackBtn" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition shrink-0 flex items-center gap-1.5">
+            <i class="fa-solid fa-bug text-amber-400"></i> Report Misclassification
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Focus Analytics, Warm-Up Score, and Charts -->
+    <div class="lg:col-span-6 space-y-6">
+      
+      <!-- Focus Score Dashboard Display -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-chart-line text-emerald-400"></i> Focus Index
+          </h2>
+          <span id="focusBadge" class="px-3 py-1 text-xs font-bold rounded-full bg-slate-800 text-slate-400 border border-slate-700">Initial Warm-up</span>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <div>
+            <div id="focusScoreDisplay" class="text-6xl font-black tracking-tight text-emerald-400 font-mono">0<span class="text-2xl font-normal text-slate-500">%</span></div>
+            <!-- Warm-up progress tracker -->
+            <div class="mt-2 space-y-1">
+              <div class="flex justify-between text-[11px] text-slate-400 font-medium">
+                <span id="warmupLabel">Warm-up Calibration:</span>
+                <span id="warmupPercentText" class="font-mono text-teal-400">0%</span>
+              </div>
+              <div class="w-48 bg-slate-950 rounded-full h-1.5 border border-slate-800 overflow-hidden">
+                <div id="warmupProgressBar" class="bg-gradient-to-r from-teal-500 to-emerald-400 h-full w-0 transition-all duration-300"></div>
+              </div>
+            </div>
+            <p id="focusAdvice" class="text-xs text-slate-400 mt-3 font-medium max-w-[250px]">
+              System initializing. Score starts at 0% and ramps during the 15-second warm-up phase.
+            </p>
+          </div>
+
+          <!-- Circular Score Ring -->
+          <div class="w-28 h-28 relative flex items-center justify-center">
+            <svg class="w-full h-full transform -rotate-90">
+              <circle cx="56" cy="56" r="46" stroke="currentColor" stroke-width="8" class="text-slate-800" fill="transparent" />
+              <circle id="scoreRing" cx="56" cy="56" r="46" stroke="currentColor" stroke-width="8" class="text-emerald-400 transition-all duration-500" fill="transparent" stroke-dasharray="289.02" stroke-dashoffset="289.02" stroke-linecap="round" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Live Status Diagnostic Bar -->
+        <div class="mt-5 pt-3 border-t border-slate-800/80">
+          <div class="text-[11px] text-slate-500 uppercase font-semibold mb-1.5">Live Diagnostics:</div>
+          <div id="penaltyLog" class="text-xs text-slate-300 font-mono bg-slate-950 p-2.5 rounded-lg border border-slate-800/80 min-h-[38px] flex items-center">
+            Camera inactive. Start camera to begin focus analysis.
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-time Chart.js Analytics Box -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl text-center">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold flex items-center gap-1.5">
+            <i class="fa-solid fa-wave-square text-indigo-400"></i> Real-Time Focus History
+          </span>
+          <span class="text-[11px] text-slate-500 font-mono">30s Rolling Window</span>
+        </div>
+
+        <!-- Live Chart Canvas -->
+        <div class="h-44 w-full pt-2">
+          <canvas id="focusChart"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/80 bg-slate-950/80 py-3 text-center text-xs text-slate-500">
+    Focus Flow AI v7.0 Enterprise • Privacy-Preserving Computer Vision Telemetry
+  </footer>
+
+  <script>
+    /* JavaScript Logic Core */
+
+    // Application State Variables
+    let studyMode = 'pc'; // 'pc', 'reading', 'notebook'
+    let sensitivityMode = 'balanced'; // 'relaxed', 'balanced', 'strict'
+    let isCameraActive = false;
+    let isFlywheelOptedIn = false;
+
+    // MediaPipe Instances
+    let cameraInstance = null;
+    let faceMesh = null;
+    let handsMesh = null;
+
+    // Telemetry and Tracking Values
+    let faceDetected = false;
+    let handDetected = false;
+    let gazeOffset = 0;
+    let headPitch = 0;
+    let eyeAspectRatio = 1.0;
+
+    // Pen Movement & Fake-Writing Algorithm
+    let penPositionHistory = []; // Array of {x, y, timestamp}
+    let currentPenVelocity = 0;
+    let writingState = 'Static'; // 'Writing', 'Static', 'No Pen'
+    let staticWritingStartTime = null;
+
+    // Warm-up and Scoring Variables
+    let sessionStartTime = null;
+    let warmupDurationMs = 15000; // 15 seconds warm-up phase
+    let isWarmupComplete = false;
+    let currentSmoothScore = 0; // Starts strictly at 0%
+    const BUFFER_SIZE = 30;
+    let scoreBuffer = Array(BUFFER_SIZE).fill(0);
+    let scoreHistory = Array(30).fill(0);
+
+    // Dynamic Chart Instance
+    let focusChart = null;
+
+    // Landmark Results Cache for Canvas Drawing
+    let lastFaceResults = null;
+    let lastHandsResults = null;
+
+    // --- Mode and Sensitivity Switchers ---
+    function setSensitivity(mode) {
+      sensitivityMode = mode;
+      ['Relaxed', 'Balanced', 'Strict'].forEach(m => {
+        const btn = document.getElementById(`sensBtn${m}`);
+        if (m.toLowerCase() === mode) {
+          btn.className = "px-2.5 py-1 rounded-lg bg-teal-500/20 text-teal-300 font-bold border border-teal-500/30 transition";
+        } else {
+          btn.className = "px-2.5 py-1 rounded-lg text-slate-400 hover:text-slate-200 transition";
+        }
+      });
+    }
+
+    function changeStudyMode(mode) {
+      studyMode = mode;
+      document.getElementById('studyModeStatusText').innerText = 
+        mode === 'pc' ? 'PC / Screen Active' : (mode === 'reading' ? 'Reading Active' : 'Notebook Pen Active');
+
+      ['pc', 'reading', 'notebook'].forEach(m => {
+        const btn = document.getElementById(`modeBtn${m.charAt(0).toUpperCase() + m.slice(1)}`);
+        btn.className = (m === mode) 
+          ? "p-3 rounded-xl border border-teal-500 bg-teal-600/20 text-teal-300 flex flex-col items-center justify-center gap-1.5 transition shadow-sm"
+          : "p-3 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 hover:border-slate-700 flex flex-col items-center justify-center gap-1.5 transition";
+      });
+    }
+
+    // --- Camera Initialization & Control ---
+    async function toggleCamera() {
+      if (isCameraActive) stopCamera();
+      else await startCamera();
+    }
+
+    async function startCamera() {
+      const videoEl = document.getElementById('videoElement');
+
+      // Initialize Face Mesh
+      faceMesh = new FaceMesh({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}` });
+      faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true });
+      faceMesh.onResults(processFaceResults);
+
+      // Initialize Hands
+      handsMesh = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+      handsMesh.setOptions({ maxNumHands: 2, minDetectionConfidence: 0.3, minTrackingConfidence: 0.3 });
+      handsMesh.onResults(processHandResults);
+
+      cameraInstance = new Camera(videoEl, {
+        onFrame: async () => {
+          await faceMesh.send({ image: videoEl });
+          await handsMesh.send({ image: videoEl });
+          renderCanvasOverlay();
+        },
+        width: 640, height: 360
+      });
+
+      try {
+        await cameraInstance.start();
+        isCameraActive = true;
+        sessionStartTime = Date.now();
+        isWarmupComplete = false;
+        
+        document.getElementById('camPlaceholder').classList.add('hidden');
+        document.getElementById('videoElement').classList.remove('hidden');
+        document.getElementById('camBtnText').innerText = "Stop Camera";
+        document.getElementById('cameraToggleBtn').className = "px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-sm font-bold rounded-xl shadow-lg transition flex items-center gap-2";
+      } catch (e) {
+        showCustomAlert("Camera access failed. Please ensure camera permissions are granted.");
+      }
+    }
+
+    function stopCamera() {
+      if (cameraInstance) cameraInstance.stop();
+      isCameraActive = false;
+      
+      document.getElementById('camPlaceholder').classList.remove('hidden');
+      document.getElementById('videoElement').classList.add('hidden');
+      document.getElementById('camBtnText').innerText = "Start Camera";
+      document.getElementById('cameraToggleBtn').className = "px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold rounded-xl shadow-lg transition flex items-center gap-2";
+      document.getElementById('aiGuideBanner').classList.add('hidden');
+      
+      const canvas = document.getElementById('outputCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      document.getElementById('penaltyLog').innerText = "Camera paused. Start camera to resume tracking.";
+    }
+
+    // --- Face Processing ---
+    function processFaceResults(res) {
+      lastFaceResults = res;
+      if (res.multiFaceLandmarks && res.multiFaceLandmarks.length > 0) {
+        faceDetected = true;
+        const lm = res.multiFaceLandmarks[0];
+
+        // Gaze Vector calculation
+        const leftIris = lm[468];
+        const rightIris = lm[473];
+        const eyeWidth = Math.hypot(lm[33].x - lm[133].x, lm[33].y - lm[133].y);
+        const currentIrisY = (leftIris.y + rightIris.y) / 2;
+        const eyeCenterY = (lm[159].y + lm[145].y + lm[386].y + lm[374].y) / 4;
+
+        gazeOffset = Math.abs(currentIrisY - eyeCenterY) / (eyeWidth || 1);
+
+        // Head Pitch (Pose Tilt)
+        const noseTip = lm[1];
+        const chin = lm[152];
+        const forehead = lm[10];
+        headPitch = ((noseTip.y - forehead.y) / (chin.y - forehead.y + 0.001)) * 100;
+
+        // Eye Aspect Ratio
+        const topLid = lm[159];
+        const bottomLid = lm[145];
+        eyeAspectRatio = Math.hypot(topLid.x - bottomLid.x, topLid.y - bottomLid.y) / (eyeWidth || 1);
+
+        document.getElementById('gazeOffsetVal').innerText = gazeOffset.toFixed(2);
+        document.getElementById('headPitchVal').innerText = headPitch.toFixed(1) + "°";
+      } else {
+        faceDetected = false;
+        document.getElementById('gazeOffsetVal').innerText = "N/A";
+        document.getElementById('headPitchVal').innerText = "N/A";
+      }
+      evaluateFocusEngine();
+    }
+
+    // --- Hand & Pen Motion Tracker (Fake-Writing Algorithm) ---
+    function processHandResults(res) {
+      lastHandsResults = res;
+      const now = Date.now();
+
+      if (res.multiHandLandmarks && res.multiHandLandmarks.length > 0) {
+        handDetected = true;
+        const hand = res.multiHandLandmarks[0];
+        
+        // Index Finger Tip (Landmark 8) used as proxy for pen tip during writing posture
+        const indexTip = hand[8];
+        const canvas = document.getElementById('outputCanvas');
+        const posX = indexTip.x * (canvas.width || 640);
+        const posY = indexTip.y * (canvas.height || 360);
+
+        penPositionHistory.push({ x: posX, y: posY, t: now });
+
+        // Keep last 1 second of points
+        penPositionHistory = penPositionHistory.filter(p => (now - p.t) <= 1000);
+
+        if (penPositionHistory.length >= 2) {
+          const first = penPositionHistory[0];
+          const last = penPositionHistory[penPositionHistory.length - 1];
+          const dist = Math.hypot(last.x - first.x, last.y - first.y);
+          const timeSec = (last.t - first.t) / 1000 || 0.001;
+
+          currentPenVelocity = dist / timeSec; // Velocity in pixels per second
+        } else {
+          currentPenVelocity = 0;
+        }
+
+        // Writing vs Static vs Fake Writing Logic
+        if (currentPenVelocity > 15.0) {
+          writingState = 'Active Writing';
+          staticWritingStartTime = null;
+        } else {
+          writingState = 'Static Pose';
+          if (!staticWritingStartTime) staticWritingStartTime = now;
+        }
+
+      } else {
+        handDetected = false;
+        currentPenVelocity = 0;
+        writingState = 'No Hand';
+        staticWritingStartTime = null;
+        penPositionHistory = [];
+      }
+
+      document.getElementById('penMotionVal').innerText = `${currentPenVelocity.toFixed(1)} px/s`;
+      document.getElementById('writingStateVal').innerText = writingState;
+      evaluateFocusEngine();
+    }
+
+    // --- Canvas Landmark Overlay Rendering ---
+    function renderCanvasOverlay() {
+      const canvas = document.getElementById('outputCanvas');
+      const video = document.getElementById('videoElement');
+      if (!canvas || !video) return;
+
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 360;
+
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const showMesh = document.getElementById('toggleMeshCheckbox').checked;
+      if (!showMesh || !isCameraActive) return;
+
+      // Draw Iris/Eyes Mesh
+      if (lastFaceResults && lastFaceResults.multiFaceLandmarks) {
+        ctx.fillStyle = "rgba(34, 197, 94, 0.7)";
+        const lm = lastFaceResults.multiFaceLandmarks[0];
+        [468, 473, 1, 152, 10].forEach(idx => {
+          if (lm[idx]) {
+            ctx.beginPath();
+            ctx.arc(lm[idx].x * canvas.width, lm[idx].y * canvas.height, 3, 0, 2 * Math.PI);
+            ctx.fill();
+          }
+        });
+      }
+
+      // Draw Hand & Pen Tracking Tip Indicator
+      if (lastHandsResults && lastHandsResults.multiHandLandmarks) {
+        lastHandsResults.multiHandLandmarks.forEach(hand => {
+          ctx.fillStyle = "rgba(56, 189, 248, 0.7)";
+          hand.forEach(pt => {
+            ctx.beginPath();
+            ctx.arc(pt.x * canvas.width, pt.y * canvas.height, 2, 0, 2 * Math.PI);
+            ctx.fill();
+          });
+
+          // Highlight Pen Tip (Index Finger)
+          if (hand[8]) {
+            ctx.strokeStyle = writingState === 'Active Writing' ? '#10b981' : '#f59e0b';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(hand[8].x * canvas.width, hand[8].y * canvas.height, 8, 0, 2 * Math.PI);
+            ctx.stroke();
+          }
+        });
+      }
+    }
+
+    // --- Primary Focus Engine Evaluation & Warm-up Phase ---
+    function evaluateFocusEngine() {
+      if (!isCameraActive) return;
+
+      const now = Date.now();
+      const elapsed = now - sessionStartTime;
+
+      // Warm-up progress calculation (0% -> 100%)
+      const warmupRatio = Math.min(1.0, elapsed / warmupDurationMs);
+      const warmupPercent = Math.round(warmupRatio * 100);
+
+      document.getElementById('warmupPercentText').innerText = `${warmupPercent}%`;
+      document.getElementById('warmupProgressBar').style.width = `${warmupPercent}%`;
+
+      if (warmupRatio < 1.0) {
+        document.getElementById('warmupLabel').innerText = "Warm-up Calibration:";
+      } else {
+        document.getElementById('warmupLabel').innerText = "Calibration Complete:";
+        isWarmupComplete = true;
+      }
+
+      let rawScore = 100;
+      let penalties = [];
+      let bannerMsg = null;
+
+      // Face presence test
+      if (!faceDetected) {
+        rawScore -= 50;
+        penalties.push("No face in frame");
+        bannerMsg = { title: "Face Not Detected", detail: "Ensure your camera has a clear view of your face." };
+      } else {
+        // Gaze offset evaluation
+        let threshold = sensitivityMode === 'strict' ? 0.30 : (sensitivityMode === 'relaxed' ? 0.45 : 0.38);
+        if (studyMode === 'notebook' || studyMode === 'reading') threshold += 0.15; // Extra tolerance for desk gaze
+
+        if (gazeOffset > threshold) {
+          rawScore -= 25;
+          penalties.push("Gaze shifted away");
+        }
+
+        // Notebook Fake-Writing / Static Pen Check
+        if (studyMode === 'notebook') {
+          if (writingState === 'Static Pose' && staticWritingStartTime) {
+            const staticDuration = (now - staticWritingStartTime) / 1000;
+            if (staticDuration > 5.0) { // Static for >5s in notebook mode triggers warning
+              rawScore -= 30;
+              penalties.push("Static Pen / Fake Writing");
+              bannerMsg = { title: "Writing Inactive", detail: "Pen static for extended time in notebook mode." };
+            }
+          }
+        }
+      }
+
+      rawScore = Math.max(10, rawScore);
+
+      // Warm-up Phase Cap: Score scales smoothly from 0% during warm-up
+      let effectiveInstantScore = rawScore * warmupRatio;
+
+      // Update score buffer for rolling average
+      scoreBuffer.shift();
+      scoreBuffer.push(effectiveInstantScore);
+
+      const smoothScore = Math.round(scoreBuffer.reduce((a, b) => a + b, 0) / BUFFER_SIZE);
+      currentSmoothScore = smoothScore;
+
+      updateUIElements(smoothScore, penalties, bannerMsg);
+
+      // Data Flywheel Background Sync
+      if (isFlywheelOptedIn) {
+        syncTelemetryFlywheelData(effectiveInstantScore);
+      }
+    }
+
+    // --- UI Update & Chart Sync ---
+    function updateUIElements(score, penalties, bannerMsg) {
+      document.getElementById('focusScoreDisplay').innerHTML = `${score}<span class="text-2xl font-normal text-slate-500">%</span>`;
+
+      // Update Circular Progress Ring
+      const ring = document.getElementById('scoreRing');
+      const circumference = 289.02;
+      const offset = circumference - (circumference * score) / 100;
+      ring.style.strokeDashoffset = offset;
+
+      const badge = document.getElementById('focusBadge');
+      const advice = document.getElementById('focusAdvice');
+
+      if (!isWarmupComplete) {
+        badge.innerText = "Warming Up";
+        badge.className = "px-3 py-1 text-xs font-bold rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30";
+        advice.innerText = "Focus score warming up from 0%. Keep studying naturally.";
+      } else if (score >= 80) {
+        badge.innerText = "Optimal Flow";
+        badge.className = "px-3 py-1 text-xs font-bold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+        advice.innerText = "Great study rhythm detected. Keep up the good momentum!";
+      } else if (score >= 50) {
+        badge.innerText = "Moderate Focus";
+        badge.className = "px-3 py-1 text-xs font-bold rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30";
+        advice.innerText = "Minor distractions detected. Refocus your gaze on your task.";
+      } else {
+        badge.innerText = "Low Focus";
+        badge.className = "px-3 py-1 text-xs font-bold rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30";
+        advice.innerText = "Sustained distraction or extended idle pen state detected.";
+      }
+
+      // Penalty Diagnostics Log
+      const penaltyLog = document.getElementById('penaltyLog');
+      if (penalties.length > 0) {
+        penaltyLog.innerText = "⚠️ " + penalties.join(" | ");
+        penaltyLog.className = "text-xs text-amber-300 font-mono bg-amber-950/30 p-2.5 rounded-lg border border-amber-800/40";
+      } else {
+        penaltyLog.innerText = "✓ Active study posture and motion verified.";
+        penaltyLog.className = "text-xs text-emerald-300 font-mono bg-emerald-950/30 p-2.5 rounded-lg border border-emerald-800/40";
+      }
+
+      // Banner Display
+      const guideBanner = document.getElementById('aiGuideBanner');
+      if (bannerMsg) {
+        document.getElementById('guideTitle').innerText = bannerMsg.title;
+        document.getElementById('guideDetail').innerText = bannerMsg.detail;
+        guideBanner.classList.remove('hidden');
+      } else {
+        guideBanner.classList.add('hidden');
+      }
+
+      // Update Chart
+      scoreHistory.shift();
+      scoreHistory.push(score);
+      if (focusChart) {
+        focusChart.data.datasets[0].data = scoreHistory;
+        focusChart.update('none');
+      }
+    }
+
+    // --- Chart.js Setup ---
+    function initChart() {
+      const ctx = document.getElementById('focusChart').getContext('2d');
+      focusChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: Array(30).fill(''),
+          datasets: [{
+            data: scoreHistory,
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            fill: true,
+            tension: 0.3,
+            borderWidth: 2,
+            pointRadius: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { min: 0, max: 100, grid: { color: '#1e293b' } },
+            x: { grid: { display: false } }
+          },
+          plugins: { legend: { display: false } }
+        }
+      });
+    }
+
+    // --- Data-Flywheel Sync & Edge Case Reporting ---
+    function toggleFlywheelOptIn() {
+      isFlywheelOptedIn = document.getElementById('flywheelOptIn').checked;
+      const statusText = document.getElementById('flywheelStatusText');
+      const statusDot = document.getElementById('flywheelDot');
+
+      if (isFlywheelOptedIn) {
+        statusText.innerText = "Syncing (Privacy Preserved)";
+        statusText.className = "text-cyan-400 font-bold font-mono";
+        statusDot.className = "w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping";
+      } else {
+        statusText.innerText = "Opted Out";
+        statusText.className = "text-slate-400 font-bold font-mono";
+        statusDot.className = "w-2.5 h-2.5 rounded-full bg-slate-600";
+      }
+    }
+
+    function syncTelemetryFlywheelData(currentCalculatedScore) {
+      // Simulates sending non-PII numerical landmark features to Edge Model Server
+      const dummyPayload = {
+        timestamp: Date.now(),
+        gazeOffset: gazeOffset,
+        headPitch: headPitch,
+        penVelocity: currentPenVelocity,
+        studyMode: studyMode,
+        score: currentCalculatedScore
+      };
+      // In production, this posts to a training endpoint:
+      // fetch('/api/flywheel/telemetry', { method: 'POST', body: JSON.stringify(dummyPayload) });
+    }
+
+    function sendEdgeCaseFeedback() {
+      if (!isCameraActive) {
+        showCustomAlert("Please start the camera before submitting feedback.");
+        return;
+      }
+      const feedbackBtn = document.getElementById('feedbackBtn');
+      feedbackBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin text-teal-400"></i> Reporting...`;
+      
+      setTimeout(() => {
+        feedbackBtn.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i> Edge-Case Logged`;
+        setTimeout(() => {
+          feedbackBtn.innerHTML = `<i class="fa-solid fa-bug text-amber-400"></i> Report Misclassification`;
+        }, 2500);
+      }, 800);
+    }
+
+    // --- Custom Modal Notification (No alert()) ---
+    function showCustomAlert(msg) {
+      const banner = document.getElementById('aiGuideBanner');
+      document.getElementById('guideTitle').innerText = "System Notice";
+      document.getElementById('guideDetail').innerText = msg;
+      banner.classList.remove('hidden');
+      setTimeout(() => banner.classList.add('hidden'), 4000);
+    }
+
+    // Initialize Page
+    window.onload = () => {
+      initChart();
+    };
+  </script>
+</body>
+</html>
