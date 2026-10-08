@@ -5,6 +5,10 @@
 
 ---
 
+これは検証企画です
+[検証内容]
+Aiを使うとどのようなサイトができ、どれくらいの人に見てもらえるのか
+
 ## English
 
 ### "Stop pretending to work. Start entering the flow."
