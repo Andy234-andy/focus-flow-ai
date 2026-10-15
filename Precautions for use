@@ -1,0 +1,122 @@
+# ⚠️ 使用上の注意・プライバシーについて
+## Focus Flow AI — Important Usage & Privacy Notice
+
+Focus Flow AI は、作業中の視覚的な動作パターンと、本人による自己評価を探究するための実験的なプロジェクトです。安心して利用していただくため、以下の内容をご確認ください。
+
+### 1. AIの推定結果について
+
+Focus Flow AI が表示するスコアは、カメラから取得した視覚的な情報などをもとに算出する実験的な推定値です。
+
+- 集中力、理解度、学習効果、生産性を直接測定するものではありません。
+- 科学的に正確性が検証された集中力測定ツールではありません。
+- 姿勢、照明、カメラの位置、眼鏡、作業環境などによって結果が変化する場合があります。
+- スコアが低いからといって、集中できていない、努力が足りない、能力が低いという意味ではありません。
+
+**スコアを自己評価の唯一の基準にしたり、他人の能力・成績・仕事ぶりを判断するために使用したりしないでください。**
+
+### 2. カメラとプライバシー
+
+カメラ機能は、利用者が説明を確認して同意し、カメラの開始操作を行った後に有効になります。
+
+- アプリはカメラの映像を利用しますが、マイク音声は要求しません。
+- 現在のアプリコードでは、カメラ映像、顔のランドマーク、活動スコア、自己評価をアプリのバックエンドサーバーへ送信する処理は確認されていません。
+- カメラの開始時には、MediaPipe のプログラムやモデルなどが外部CDN（jsDelivr）から読み込まれます。この通信では、IPアドレスなどの接続情報がサービス側に伝わる可能性があります。
+- Webサイトのコードには、訪問状況の把握を目的とした Google Analytics のタグが含まれています。カメラデータの処理とは別に、アクセスに関する情報が解析サービスによって処理される可能性があります。
+
+そのため、すべての通信が端末内で完結する完全オフラインのツールではありません。また、第三者ライブラリを含むシステム全体について、独立したセキュリティ監査が完了していることを意味するものでもありません。
+
+### 3. データの保存とCSVのエクスポート
+
+現在のアプリコードでは、セッション履歴や自己評価はページ内のメモリで管理され、自動的に保存する処理はありません。
+
+- ページを再読み込みしたり閉じたりすると、ページ内に保持されているセッションデータは失われます。
+- CSVファイルは、利用者がエクスポート操作を行った場合に生成されます。
+- CSVには、経過時間、作業モード、感度設定、推定値、入力品質、自己評価、入力したメモなどが含まれる場合があります。
+- エクスポートしたCSVは利用者自身で管理してください。公開・共有する前に、個人的な情報や他人に知られたくない内容が含まれていないか確認してください。
+
+**CSVをエクスポートすることと、サーバーへデータを送信することは別の操作です。**
+
+### 4. 正しい使い方
+
+- カメラを使用する前に、画面に表示されるプライバシーに関する説明を確認してください。
+- 周囲の人が意図せず映り込まないように注意し、他人を撮影・分析する場合は適切な許可を得てください。
+- 照明やカメラの位置、姿勢、作業モードなどが変わった場合は、必要に応じてキャリブレーションをやり直してください。
+- 感度設定を変更しても、推定結果の科学的な正確性が保証されるわけではありません。
+- プライバシーが気になる場合や、利用に不快感がある場合は、カメラを停止してください。
+
+### 5. 実験的プロジェクトとしての制限
+
+Focus Flow AI は継続的に開発・改善されている実験的なツールです。機能、推定方法、表示内容、データの取り扱いなどは、今後の更新で変更される可能性があります。
+
+結果の正確性、継続的な利用可能性、すべての環境での正常な動作を保証するものではありません。
+
+本ツールを、医療・心理に関する診断、学校での成績評価、採用判断、職場での人事評価など、重大な判断の根拠として使用しないでください。
+
+### 6. フィードバックと改善
+
+Focus Flow AI は、実際の利用者からのフィードバックを通じて改善を目指すプロジェクトです。
+
+不具合や誤った推定、使いにくい部分を発見した場合は、公開リポジトリの Issue などを通じてお知らせください。報告する際は、氏名、顔写真、個人的な記録などの機密情報を不用意に公開しないようにしてください。
+
+---
+
+# English Version
+
+## Important Usage & Privacy Notice
+
+Focus Flow AI is an experimental project exploring observable movement patterns during work and study sessions. Please read the following information before using the application.
+
+### 1. AI Estimates and Limitations
+
+The scores displayed by Focus Flow AI are experimental estimates derived from visual signals and related measurements.
+
+- They do not directly measure attention, comprehension, learning outcomes, or productivity.
+- Focus Flow AI is not a scientifically validated attention-measurement tool.
+- Results may vary with posture, lighting, camera placement, glasses, and working conditions.
+- A low score does not mean that you are not concentrating, that you are not trying hard enough, or that you have lower abilities.
+
+**Do not use the score as your sole measure of performance or to judge another person's abilities, academic performance, or work quality.**
+
+### 2. Camera and Privacy
+
+Camera processing starts only after you review the on-page explanation, provide consent, and initiate the camera.
+
+- The application uses video but does not request microphone audio.
+- The current application code contains no process that uploads camera frames, facial landmarks, activity scores, or self-checks to an application backend server.
+- When camera processing starts, MediaPipe scripts, models, and related resources are loaded from the jsDelivr CDN. This connection may expose ordinary connection metadata, such as your IP address, to the service.
+- The website source includes a Google Analytics tag for understanding site visits. Access-related information may therefore be processed by the analytics service, separately from camera processing.
+
+Consequently, this is not a completely offline tool. The inclusion of third-party libraries also means that the entire system has not necessarily undergone an independent security audit.
+
+### 3. Session Data and CSV Export
+
+In the current application code, session history and self-checks are kept in page memory rather than automatically saved.
+
+- Reloading the page or closing it clears the session data held in that page.
+- A CSV file is generated only when you explicitly use the export function.
+- The CSV may contain elapsed time, study mode, sensitivity settings, estimated scores, input quality, self-ratings, and notes you entered.
+- You are responsible for managing exported files. Review them for personal or sensitive information before sharing or publishing them.
+
+**Exporting a CSV file is a separate action from uploading data to a server.**
+
+### 4. Responsible Use
+
+- Read the privacy explanation before enabling the camera.
+- Avoid unintentionally recording people nearby. Obtain appropriate permission before capturing or analyzing other people.
+- Recalibrate when necessary if your lighting, camera position, posture, or working mode changes.
+- Changing sensitivity does not guarantee scientifically accurate results.
+- Stop the camera whenever you have privacy concerns or feel uncomfortable using the application.
+
+### 5. Experimental Status
+
+Focus Flow AI is an experimental project under ongoing development. Features, estimation methods, displayed information, and data-handling practices may change in future updates.
+
+The application does not guarantee accuracy, uninterrupted availability, or correct operation in every environment.
+
+Do not use it as the basis for medical or psychological diagnoses, school grading, hiring decisions, or consequential workplace evaluations.
+
+### 6. Feedback and Improvement
+
+Focus Flow AI aims to improve through feedback from real users.
+
+Please report bugs, inaccurate estimates, or usability issues through the repository's public Issues section. Do not unnecessarily publish confidential information, such as names, face images, or personal session records, in bug reports.
