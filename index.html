@@ -150,14 +150,14 @@
     <div class="layout">
       <div class="stack">
         <section class="card" aria-labelledby="privacyTitle">
-          <div class="card-head"><h2 id="privacyTitle">1 · Privacy & camera permission</h2><span class="pill">No analytics</span></div>
+          <div class="card-head"><h2 id="privacyTitle">1 · Privacy & camera permission</h2><span class="pill">Traffic analytics enabled</span></div>
           <p class="muted" style="font-size:13px;margin-bottom:10px">
             Camera access is off until you give consent and press Start camera. No microphone is requested.
           </p>
           <div class="privacy-grid">
             <div class="privacy-item"><b>Processed in your browser</b><span>The app's own code does not upload camera frames, face landmarks, activity scores, or self-checks to an app server.</span></div>
             <div class="privacy-item"><b>Model files come from a CDN</b><span>After you start, pinned MediaPipe scripts and model/WASM assets are downloaded from jsDelivr. The CDN may receive connection metadata.</span></div>
-            <div class="privacy-item"><b>No background data store</b><span>Session history and self-checks remain in page memory. There is no localStorage, cookie-based session, analytics tag, or automatic telemetry upload in this file.</span></div>
+            <div class="privacy-item"><b>Session data stays local</b><span>Session history and self-checks remain in page memory. Google Analytics and Vercel Web Analytics measure site traffic, including page views and related visit metadata such as referrers, device/browser details, and approximate location. This app does not send camera frames, face landmarks, focus estimates, or self-check ratings to either analytics service.</span></div>
             <div class="privacy-item"><b>You stay in control</b><span>Stop camera to end capture. Export is manual and creates a CSV file only after you click the export button.</span></div>
           </div>
           <label class="check-row" for="privacyConsent">
@@ -168,7 +168,7 @@
           <details>
             <summary>What this privacy statement does — and does not — promise</summary>
             <ul class="tight muted" style="font-size:12px">
-              <li>This file contains no code that sends the computed data to an application backend.</li>
+              <li>The app does not send computed session data to an application backend. Separate Google Analytics and Vercel Web Analytics scripts measure site traffic; this app does not send them camera frames, face landmarks, focus estimates, or self-check ratings.</li>
               <li>The browser still downloads the third-party MediaPipe libraries and model assets from jsDelivr when camera processing starts. CDN requests can expose typical connection metadata such as IP address and request details.</li>
               <li>Because a third-party library executes in the page, this is not equivalent to a fully offline or independently audited installation. This page does not claim that all network activity is eliminated.</li>
               <li>For production use, review and self-host pinned dependencies, serve over HTTPS, and configure security headers at the hosting layer.</li>
@@ -1044,7 +1044,7 @@
       setBusySetupControls(false);
       $("handsEnabled").disabled = true;
       $("privacyConsent").disabled = true;
-      setDiagnostics("Camera is active. Collecting valid frames; no app data is being uploaded.");
+      setDiagnostics("Camera is active. Collecting valid frames; no camera or session data is being uploaded.");
       showSystemNotice("Camera active. The estimate will remain unavailable until personal calibration and usable visual input are available.");
       state.rafId = requestAnimationFrame(() => inferenceLoop(token));
       if (state.sampleInterval) clearInterval(state.sampleInterval);
@@ -1326,7 +1326,7 @@
     resizeObserver.observe(graph);
   }
 
-  // Initial state: no camera, model requests, analytics, cookies, or persistent storage.
+  // Initial state: no camera or model requests; session data is memory-only. Site analytics is initialized separately.
   state.sessionStartAt = 0;
   state.calibrationStartAt = 0;
   setCameraButton();
@@ -1339,5 +1339,6 @@
   drawHistory();
 })();
 </script>
+  <script type="module" src="/analytics.js"></script>
 </body>
 </html>
