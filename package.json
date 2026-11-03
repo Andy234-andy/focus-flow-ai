@@ -1,0 +1,15 @@
+{
+  "name": "focus-flow-ai",
+  "private": true,
+  "version": "8.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  },
+  "devDependencies": {
+    "vite": "^7.0.0"
+  }
+}
